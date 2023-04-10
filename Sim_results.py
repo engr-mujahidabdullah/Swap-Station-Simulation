@@ -11,24 +11,29 @@ def wait_intervals(l_str: str) -> list:
                     break
     return(time)
 
-# Read the Excel file
-df = pd.read_excel('Day_1.xlsx')
+# read all sheets from an .xlsx file into a dictionary of dataframes
+sheets_dict = pd.read_excel('Day_1.xlsx', sheet_name=None)
 
-#Replace NaN with 0
-df = df.fillna(0)
+# print the keys of the dictionary (i.e., the sheet names)
+print(sheets_dict.keys())
 
-# Merge all values in column 'xyz' as a single string
-merged_string = ' '.join(df['Event'].astype(str).tolist())
-merged_string = merged_string.replace(" ","")
+# print the first 5 rows of each dataframe
+for sheet_name, df in sheets_dict.items():
+    print(f"Sheet name: {sheet_name}")
+    #Replace NaN with 0
+    df = df.fillna(0)
+    # Merge all values in column 'xyz' as a single string
+    merged_string = ' '.join(df['Event'].astype(str).tolist())
+    merged_string = merged_string.replace(" ","")
 
 
-wait_time = wait_intervals(merged_string)
+    wait_time = wait_intervals(merged_string)
 
 # add the array as a new column, only where df['vehicle'] == 1
-df.loc[df['Vehicles'] == 1, 'wait_time'] = wait_time
+    df.loc[df['Vehicles'] == 1, 'wait_time'] = wait_time
 
 # save the dataframe to an .xlsx file
-df.to_excel('Day_1.xlsx', index=False)
+#df.to_excel('Day_1.xlsx', index=False)
 
 
 """
