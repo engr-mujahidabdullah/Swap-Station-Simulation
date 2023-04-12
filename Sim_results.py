@@ -98,8 +98,8 @@ from keras.layers import LSTM, Dense
 
 # Define the model architecture
 model = Sequential()
-model.add(LSTM(units=200, input_shape=(timesteps, features)))
-model.add(Dense(units=3))
+model.add(LSTM(units=300, input_shape=(timesteps, features)))
+model.add(Dense(units=3, activation='linear'))
 
 # Compile the model
 model.compile(optimizer='Adam', loss='mean_squared_error')
@@ -117,13 +117,20 @@ y_test_f = np.ravel(y_test_f)
 
 #%%
 
-from sklearn.metrics import mean_squared_error
-
-# Calculate the accuracy
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+# Calculate the MSE
 mse = mean_squared_error(y_test_f, y_pred_f)
 
 # Print the result
 print("MSE:", mse)
 
+# Calculate MAE
+mae = mean_absolute_error(y_test_f, y_pred_f)
 
-# %%
+print('MAE:', mae)
+
+r2 = r2_score(y_test_f, y_pred_f)
+print("R-squared (R2): {:.4f}".format(r2))
+
+model.summary()
+
