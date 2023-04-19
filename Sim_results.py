@@ -10,6 +10,7 @@ from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras.models import load_model
 import matplotlib.pyplot as plt
+import xgboost as xgb
 
 
 #%%
@@ -232,4 +233,38 @@ plt.plot(np.round(pred))
 
 plt.show()
 
+# %%
+"""
+XGBOOST
+"""
+#^ Create a DMatrix for XGBoost
+dtrain = xgb.DMatrix(X_train, label=y_train)
+dtest = xgb.DMatrix(X_test, label=y_test)
+
+#^ Set the parameters for XGBoost
+params = {
+    'max_depth': 5,
+    'eta': 0.1,
+    'objective': 'reg:squarederror'
+}
+
+#^ Train the XGBoost model
+num_rounds = 5000
+model_xgb = xgb.train(params, dtrain, num_rounds)
+
+#^ Predict the target values for the train set
+y_train_xgb = model_xgb.predict(dtrain)
+
+#^ Predict the target values for the test set
+y_pred_xgb = model_xgb.predict(dtest)
+
+model_errors(y_train, np.round(y_train_xgb))
+print("\n")
+model_errors(y_test, np.round(y_pred_xgb))
+
+# %%
+plt.plot(np.array(y_test))
+plt.plot(np.round(y_pred_xgb))
+
+plt.show()
 # %%
