@@ -19,7 +19,7 @@ rn.seed(1234)
 random.set_seed(1234)
 
 #^ run script on single core to get reproduceable results
-os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['TF_NUM_THREADS'] = '1'
 
 #%%
 
@@ -48,6 +48,9 @@ def model_errors(actual, predic):
     #*Calculate the MSE
     mse = mean_squared_error(actual, predic)
     print("MSE:", mse)
+
+    rmse = np.sqrt(mse)
+    print("RMSE:", rmse)
 
     # Calculate MAE
     mae = mean_absolute_error(actual, predic)
@@ -191,7 +194,7 @@ features = X_train_t[1].shape[1]
 
 #* Define the model architecture
 model = Sequential()
-model.add(LSTM(units=200, activation='linear', input_shape=(timesteps, features)))
+model.add(LSTM(units=100, activation='linear', input_shape=(timesteps, features)))
 model.add(Dense(units=5, activation='linear'))
 model.add(Dense(units=5, activation='linear'))
 model.add(Dense(units=5, activation='linear'))
@@ -201,7 +204,7 @@ model.add(Dense(units=5, activation='linear'))
 model.compile(optimizer='Adam', loss='mean_squared_error')
 
 #* Train the model
-model.fit(X_train_t, y_train_t, epochs=1000, batch_size=90)
+model.fit(X_train_t, y_train_t, epochs=1000, batch_size=150)
 model.save("best_model.h5")
 
 
@@ -220,7 +223,12 @@ y_pred_LSTM_s = loaded_model.predict(X_test_t)
 
 model_errors(y_test_t, np.round(y_pred_LSTM_s))
 
+actual = [y_test_t[i][0] for i in range(len(y_test_t))]
+pred = [y_pred_LSTM_s[i][0] for i in range(len(y_pred_LSTM_s))]
+
 # %%
-plt.plot(np.round(y_pred_LSTM))
+plt.plot(np.round(actual))
+plt.plot(np.round(pred))
+
 plt.show()
 # %%
