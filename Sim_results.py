@@ -169,7 +169,7 @@ X_df = scaler_xd.fit_transform(X_df)
 #%%
 
 #* Split the dataset into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X_df, y_df, test_size=0.1, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(X_df, y_df, test_size=0.3, shuffle=False)
 
 
 
@@ -194,7 +194,7 @@ features = X_train_t[1].shape[1]
 
 #* Define the model architecture
 model = Sequential()
-model.add(LSTM(units=100, activation='linear', input_shape=(timesteps, features)))
+model.add(LSTM(units=80, activation='linear', input_shape=(timesteps, features)))
 model.add(Dense(units=5, activation='linear'))
 model.add(Dense(units=5, activation='linear'))
 model.add(Dense(units=5, activation='linear'))
@@ -231,4 +231,5 @@ plt.plot(np.round(actual))
 plt.plot(np.round(pred))
 
 plt.show()
+
 # %%
