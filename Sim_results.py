@@ -258,6 +258,7 @@ y_train_xgb = model_xgb.predict(dtrain)
 #^ Predict the target values for the test set
 y_pred_xgb = model_xgb.predict(dtest)
 
+print("\n") 
 model_errors(y_train, np.round(y_train_xgb))
 print("\n")
 model_errors(y_test, np.round(y_pred_xgb))
