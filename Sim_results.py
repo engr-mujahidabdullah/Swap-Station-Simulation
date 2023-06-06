@@ -268,3 +268,7 @@ plt.plot(np.round(y_pred_xgb))
 
 plt.show()
 # %%
+test_df = pd.DataFrame(y_test)
+test_df['pred'] = np.round(y_pred_xgb)
+test_df[test_df['wait_time'] > 0]
+# %%
