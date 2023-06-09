@@ -27,7 +27,7 @@ os.environ['TF_NUM_THREADS'] = '1'
 
 #%%
 #* Read the Excel file
-df = pd.read_excel('sim_38.xlsx')
+df = pd.read_excel('SIM2000.xlsx')
 
 #* Merge all values in column 'xyz' as a single string
 merged_string = ''.join(df['Event'].astype(str).tolist())
@@ -52,8 +52,11 @@ df = df.fillna(0)
 """
 Select predictors and Response from dataset
 """
+
+#df = df[df['Queue_A'] != 0]
+
 #? Predictor Variables
-X_df = df[['Time_conversion','Peek', 'Vehicles', 'Queue_A', 'To Serve', 'IN', 'NO', 'OUT',
+X_df = df[['Time_conversion','Peek', 'Vehicles', 'Queue_A', 'Queue_B', 'To Serve', 'IN', 'NO', 'OUT',
        'Stock Remaining', 'Slot_1_SoC', 'Slot_2_SoC', 'Slot_3_SoC',
        'Slot_4_SoC']]
 
@@ -98,7 +101,7 @@ model.add(Dense(units=5, activation='linear'))
 model.compile(optimizer='Adam', loss='mean_squared_error')
 
 #* Train the model
-model.fit(X_train_t, y_train_t, epochs=1500, batch_size=150)
+model.fit(X_train_t, y_train_t, epochs=1500, batch_size=80)
 model.save("lstm_model.h5")
 
 #%%

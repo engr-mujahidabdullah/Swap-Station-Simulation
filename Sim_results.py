@@ -11,7 +11,7 @@ from keras.layers import LSTM, Dense
 from keras.models import load_model
 import matplotlib.pyplot as plt
 import xgboost as xgb
-
+from functions import wait_intervals, window, model_errors
 
 #%%
 #^ set Seed
@@ -21,91 +21,6 @@ random.set_seed(1234)
 
 #^ run script on single core to get reproduceable results
 os.environ['TF_NUM_THREADS'] = '1'
-
-#%%
-
-def wait_intervals(l_str: str) -> list:
-    time = []
-    for i in range(len(l_str)):
-        if(l_str[i] == "I"):
-            for j in range(i, len(l_str)):
-                if(l_str[j] == "O"):
-                    time.append((j - i))
-                    l_str.replace(l_str[j],"0")
-                    break
-    return(time)
-
-def window(X_df, win_s = 5):
-    X_df = np.array(X_df)
-    X = []
-    for i in range(len(X_df) - win_s):
-        row_ = [a for a in X_df[i:i+win_s]]
-        X.append(row_)
-
-    return np.array(X)
-
-def model_errors(actual, predic):
-    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-    #*Calculate the MSE
-    mse = mean_squared_error(actual, predic)
-    print("MSE:", mse)
-
-    rmse = np.sqrt(mse)
-    print("RMSE:", rmse)
-
-    # Calculate MAE
-    mae = mean_absolute_error(actual, predic)
-    print('MAE:', mae)
-
-    # Calculare R2
-    r2 = r2_score(actual, predic)
-    print("R-squared (R2): {:.4f}".format(r2))
-
-def process_test(win):
-    df_ = pd.read_excel('Test.xlsx')
-
-    # Merge all values in column 'xyz' as a single string
-    merged_string = ' '.join(df_['Event'].astype(str).tolist())
-    merged_string = merged_string.replace(" ","")
-
-    wait_time = wait_intervals(merged_string)
-
-    # add the array as a new column, only where df['vehicle'] == 1
-    df_.loc[df_['Vehicles'] == 1, 'wait_time'] = wait_time
-
-    # Replace True and False values with 1 and 0, respectively
-    df_['Peek'] = df_['Peek'].replace({True: 1, False: 0})
-    df_['Event'] = df_['Event'].replace({"I": "IN", "O": "OUT", 0: "NO"})
-
-
-    event_d = pd.get_dummies(df_['Event'])
-    df_ = pd.concat([df_, event_d], axis=1)
-
-    #Replace NaN with 0
-    df_ = df_.fillna(0)
-
-    # Columns to exclude from scaling
-    exclude_cols = ['Time', 'Event', 'column']
-
-    # Get numeric columns to scale
-    numeric_cols = [col for col in df_.columns if col not in exclude_cols]
-
-    # Scale numeric columns using StandartScaler
-    scaler = MinMaxScaler()
-    df_[numeric_cols] = scaler.fit_transform(df_[numeric_cols])
-
-    #Select predictors and Response from dataset
-    X_test = df_[['Time_conversion','Peek', 'Vehicles', 'Queue_A', 'To Serve', 'IN', 'NO', 'OUT',
-        'Stock Remaining', 'Slot_1_SoC', 'Slot_2_SoC', 'Slot_3_SoC',
-        'Slot_4_SoC']]
-
-    Y_test = df_['wait_time']
-
-    if(win == True):
-        X_test = window(X_test)
-        Y_test = window(Y_test)
-
-    return X_test, Y_test 
 
 
 #%%
@@ -205,13 +120,13 @@ model.add(Dense(units=5, activation='linear'))
 model.compile(optimizer='Adam', loss='mean_squared_error')
 
 #* Train the model
-model.fit(X_train_t, y_train_t, epochs=1000, batch_size=150)
-model.save("best_model.h5")
-
+model.fit(X_train_t, y_train_t, epochs=1500, batch_size=150)
+model.save("lstm_model.h5")
+       
 
 #%%
 #~ Load the saved model
-loaded_model = load_model('best_model.h5')
+loaded_model = load_model('lstm_model.h5')
 
 #%%
 #*Make predictions
@@ -243,14 +158,15 @@ dtest = xgb.DMatrix(X_test, label=y_test)
 
 #^ Set the parameters for XGBoost
 params = {
-    'max_depth': 5,
-    'eta': 0.1,
+    'max_depth': 7,
+    'eta': 0.4,
     'objective': 'reg:squarederror'
 }
 
 #^ Train the XGBoost model
-num_rounds = 5000
+num_rounds = 50000
 model_xgb = xgb.train(params, dtrain, num_rounds)
+
 
 #^ Predict the target values for the train set
 y_train_xgb = model_xgb.predict(dtrain)
@@ -268,8 +184,65 @@ plt.plot(np.array(y_test))
 plt.plot(np.round(y_pred_xgb))
 
 plt.show()
-# %%
-test_df = pd.DataFrame(y_test)
-test_df['pred'] = np.round(y_pred_xgb)
-test_df[test_df['wait_time'] > 0]
+
+
+#%%
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from tensorflow import keras
+from tensorflow.keras import layers
+
+# Load your dataset into a pandas DataFrame
+# Assuming your dataset has features in columns 'feature1', 'feature2', ...
+# and the target variable in a column 'target'
+# data = pd.read_csv('your_data.csv')
+
+# Scale the input features
+#scaler = StandardScaler()
+#X_train_scaled = scaler.fit_transform(X_train)
+#X_test_scaled = scaler.transform(X_test)
+
+#%%
+# Define the ANN model architecture
+model_ann = keras.Sequential([
+    layers.Dense(80, activation='sigmoid', input_shape=(X_train.shape[1],)),
+    layers.Dense(80, activation='sigmoid'),
+    layers.Dense(80, activation='sigmoid'),
+    layers.Dense(80, activation='sigmoid'),
+    layers.Dense(1)  # Output layer with 1 neuron for regression
+])
+
+# Compile the model
+model_ann.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+model_ann.fit(X_train, y_train, epochs=1000, batch_size=32, verbose=1)
+
+model_ann.save("ann_model.h5")
+
+#%%
+#~ Load the saved model
+model_ann = load_model('ann_model.h5')
+
+#^ Predict the target values for the train set
+y_train_ann = model_ann.predict(X_train)
+
+#^ Predict the target values for the test set
+y_pred_ann = model_ann.predict(X_test)
+
+#%%
+print("\n") 
+model_errors(y_train, np.round(y_train_ann))
+print("\n")
+model_errors(y_test, np.round(y_pred_ann))
+
+
+
+plt.plot(np.array(y_test))
+plt.plot(np.round(y_pred_ann))
+
+plt.show()
+
 # %%
