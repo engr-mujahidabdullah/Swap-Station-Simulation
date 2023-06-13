@@ -27,7 +27,7 @@ os.environ['TF_NUM_THREADS'] = '1'
 
 #%%
 #* Read the Excel file
-df = pd.read_excel('SIM2000.xlsx')
+df = pd.read_excel('sim_38.xlsx')
 
 #* Merge all values in column 'xyz' as a single string
 merged_string = ''.join(df['Event'].astype(str).tolist())
@@ -56,12 +56,92 @@ Select predictors and Response from dataset
 #df = df[df['Queue_A'] != 0]
 
 #? Predictor Variables
-X_df = df[['Time_conversion','Peek', 'Vehicles', 'Queue_A', 'Queue_B', 'To Serve', 'IN', 'NO', 'OUT',
+X_df = df[['Peek', 'Vehicles', 'Queue_B',
        'Stock Remaining', 'Slot_1_SoC', 'Slot_2_SoC', 'Slot_3_SoC',
        'Slot_4_SoC']]
 
 #? Response Variable
 y_df = df['wait_time']
+
+#%%
+
+from scipy.stats import ttest_ind, ttest_rel
+
+# Assuming you have a numerical variable 'numerical_var' and a categorical variable 'categorical_var'
+
+group1 = df['wait_time'][df['Peek'] == 1]
+group2 = df['wait_time'][df['Peek'] == 0]
+
+# Perform independent t-test
+t_statistic, p_value = ttest_ind(group1, group2)
+
+# Print the results
+print("Peek")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Queue_B'])
+
+# Print the results
+print("Queue_B")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Stock Remaining'])
+
+# Print the results
+print("Stock Remaining")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Vehicles'])
+
+# Print the results
+print("Vehicles")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Slot_1_SoC'])
+
+# Print the results
+print("Slot_1_SoC")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Slot_2_SoC'])
+
+# Print the results
+print("Slot_2_SoC")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_rel(df['wait_time'], df['Slot_3_SoC'])
+
+# Print the results
+print("Slot_3_SoC")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+# Assuming you have two independent samples x1 and x2 [Paired ttest]
+t_statistic, p_value = ttest_ind(df['wait_time'], df['Slot_4_SoC'])
+
+# Print the results
+print("Slot_4_SoC")
+print("T-statistic:", t_statistic)
+print("p-value:", p_value)
+
+df.describe().to_excel("description.xlsx", index=True)
+
+#y_df.describe()
+
+
 
 #%%
 #* Split the dataset into training and test sets
