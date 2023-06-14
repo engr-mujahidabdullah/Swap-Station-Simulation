@@ -24,10 +24,11 @@ random.set_seed(1234)
 #^ run script on single core to get reproduceable results
 os.environ['TF_NUM_THREADS'] = '1'
 
+path = 'sim_30.xlsx'
 
 #%%
 #* Read the Excel file
-df = pd.read_excel('sim_38.xlsx')
+df = pd.read_excel(path)
 
 #* Merge all values in column 'xyz' as a single string
 merged_string = ''.join(df['Event'].astype(str).tolist())

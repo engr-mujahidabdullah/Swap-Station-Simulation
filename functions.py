@@ -99,4 +99,3 @@ def process_test(win):
         Y_test = window(Y_test)
 
     return X_test, Y_test 
-
