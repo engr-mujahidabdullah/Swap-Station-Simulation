@@ -181,7 +181,7 @@ model.add(Dense(units=5, activation='linear'))
 model.compile(optimizer='Adam', loss='mean_squared_error')
 
 #* Train the model
-model.fit(X_train_t, y_train_t, epochs=1500, batch_size=80)
+model.fit(X_train_t, y_train_t, epochs=1500, batch_size=200)
 model.save("lstm_model.h5")
 
 #%%
@@ -189,12 +189,15 @@ model.save("lstm_model.h5")
 loaded_model = load_model('lstm_model.h5')
 
 #%%
+print("LSTM Model")
 #*Make predictions
 y_pred_LSTM = loaded_model.predict(X_train_t)
 
 #* print Errors
+print("LSTM Model -- Train Data")
 model_errors(y_train_t, np.round(y_pred_LSTM))
 
+print("LSTM Model -- Test Data")
 y_pred_LSTM_s = loaded_model.predict(X_test_t)
 
 model_errors(y_test_t, np.round(y_pred_LSTM_s))
@@ -203,10 +206,19 @@ actual = [y_test_t[i][0] for i in range(len(y_test_t))]
 pred = [y_pred_LSTM_s[i][0] for i in range(len(y_pred_LSTM_s))]
 
 # %%
-plt.plot(np.round(actual))
-plt.plot(np.round(pred))
+#plt.plot(np.round(actual))
+#plt.plot(np.round(pred))
 
+# Plotting
+plt.plot(np.round(actual), label='Actual')
+plt.plot(np.round(pred), label='Predicted')
+plt.xlabel('Data Point')
+plt.ylabel('Value')
+plt.legend()
+plt.title('Actual vs Predicted Data LSTM')
 plt.show()
+
+
 
 
 #%%
@@ -222,7 +234,7 @@ model_ann = keras.Sequential([
 model_ann.compile(optimizer='adam', loss='mean_squared_error')
 
 # Train the model
-model_ann.fit(X_train_scaled, y_train, epochs=1500, batch_size=80, verbose=1)
+model_ann.fit(X_train_scaled, y_train, epochs=1500, batch_size=200, verbose=1)
 
 model_ann.save("ann_model.h5")
 
@@ -231,7 +243,9 @@ model_ann.save("ann_model.h5")
 #~ Load the saved model
 model_ann = load_model('ann_model.h5')
 
+print("ann Model")
 #^ Predict the target values for the train set
+
 y_train_ann = model_ann.predict(X_train_scaled)
 
 #^ Predict the target values for the test set
@@ -239,16 +253,24 @@ y_pred_ann = model_ann.predict(X_test_scaled)
 
 #%%
 print("\n") 
+print("ann Model -- Train Data")
 model_errors(y_train, np.round(y_train_ann))
 print("\n")
+print("ann Model -- Test Data")
 model_errors(y_test, np.round(y_pred_ann))
 
+#%%
 
-
-plt.plot(np.array(y_test))
-plt.plot(np.round(y_pred_ann))
-
+# Plotting
+plt.plot(np.round(y_test), label='Actual')
+plt.plot(np.round(y_pred_ann), label='Predicted')
+plt.xlabel('Data Point')
+plt.ylabel('Value')
+plt.legend()
+plt.title('Actual vs Predicted Data ANN')
 plt.show()
+
+
 
 # %%
 """
@@ -276,14 +298,21 @@ y_train_xgb = model_xgb.predict(dtrain)
 #^ Predict the target values for the test set
 y_pred_xgb = model_xgb.predict(dtest)
 
-print("\n") 
+print("XGBoost")
+print("XGBoost -- Train Data")
 model_errors(y_train, np.round(y_train_xgb))
 print("\n")
+print("XGBoost -- Test Data")
 model_errors(y_test, np.round(y_pred_xgb))
 
-#%%
-plt.plot(np.array(y_test))
-plt.plot(np.round(y_pred_xgb))
 
+#%%
+# Plotting
+plt.plot(np.round(y_test), label='Actual')
+plt.plot(np.round(y_pred_xgb), label='Predicted')
+plt.xlabel('Data Point')
+plt.ylabel('Value')
+plt.legend()
+plt.title('Actual vs Predicted Data XGBoost')
 plt.show()
 # %%
