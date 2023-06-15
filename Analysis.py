@@ -1,3 +1,4 @@
+print("Swap station check")
 #%% lib and functions
 import pandas as pd
 import numpy as np
