@@ -23,11 +23,12 @@ def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
         model.add(Dense(units=5, activation='linear'))
         model.add(Dense(units=5, activation='linear'))
 
+
         #* Compile the model
         model.compile(optimizer='Adam', loss='mean_squared_error')
 
         #* Train the model
-        model.fit(X_train_t, y_train_t, epochs=1500, batch_size=200)
+        model.fit(X_train_t, y_train_t, epochs=1500, batch_size=200, verbose=1)
         model.save("lstm_model.h5")
 
     try:
@@ -35,10 +36,10 @@ def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
         loaded_model = load_model('lstm_model.h5')
 
         print("LSTM Model")
-        #*Make predictions
+            #*Make predictions
         y_pred_LSTM = loaded_model.predict(X_train_t)
 
-        #* print Errors
+            #* print Errors
         print("LSTM Model -- Train Data")
         model_errors(y_train_t, np.round(y_pred_LSTM))
 
@@ -50,7 +51,7 @@ def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
         actual = [y_test_t[i][0] for i in range(len(y_test_t))]
         pred = [y_pred_LSTM_s[i][0] for i in range(len(y_pred_LSTM_s))]
 
-        # Plotting
+            # Plotting
         plt.plot(np.round(actual), label='Actual')
         plt.plot(np.round(pred), label='Predicted')
         plt.xlabel('Data Point')
@@ -58,9 +59,10 @@ def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
         plt.legend()
         plt.title('Actual vs Predicted Data LSTM')
         plt.show()
-
     except:
-        print("No saved Model Found")
+        print("No saved model found")
+
+
 
 
 def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True):
@@ -69,8 +71,8 @@ def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True):
         # Define the ANN model architecture
         model_ann = keras.Sequential([
             layers.Dense(80, activation='sigmoid', input_shape=(X_train_scaled.shape[1],)),
-            layers.Dense(80, activation='sigmoid'),
-            layers.Dense(80, activation='sigmoid'),
+            layers.Dense(5, activation='sigmoid'),
+            layers.Dense(5, activation='sigmoid'),
             layers.Dense(1)  # Output layer with 1 neuron for regression
         ])
 
@@ -78,7 +80,7 @@ def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True):
         model_ann.compile(optimizer='adam', loss='mean_squared_error')
 
         # Train the model
-        model_ann.fit(X_train_scaled, y_train, epochs=1500, batch_size=200, verbose=1)
+        model_ann.fit(X_train_scaled, y_train, epochs=1500, batch_size=300, verbose=1)
 
         model_ann.save("ann_model.h5")
 

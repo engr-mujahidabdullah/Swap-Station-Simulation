@@ -163,4 +163,12 @@ y_test_t = window(y_test)
 
 #%%
 model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test)
+
+
+# %%
+model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = False)
+
+# %%
+model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = False)
+
 # %%
