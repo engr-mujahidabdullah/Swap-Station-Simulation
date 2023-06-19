@@ -23,7 +23,7 @@ def window(X_df, win_s = 5):
 
     return np.array(X)
 
-def model_errors(actual, predic):
+def model_errors(actual, predic, mape = False):
     from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
     #*Calculate the MSE
     mse = mean_squared_error(actual, predic)
@@ -39,6 +39,11 @@ def model_errors(actual, predic):
     # Calculare R2
     r2 = r2_score(actual, predic)
     print("R-squared (R2): {:.4f}".format(r2))
+
+    if(mape == True):
+        # Calculate mean absolute percentage error (MAPE)
+        mape = np.mean(np.abs((actual - predic) / actual)) * 100
+        print("Mean Absolute Percentage Error (MAPE): {:.2f}%".format(mape))
 
 def data_insights(actual, predic):
 

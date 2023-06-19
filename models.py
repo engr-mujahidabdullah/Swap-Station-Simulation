@@ -11,7 +11,9 @@ from tensorflow.keras import layers
 
 import xgboost as xgb
 
-def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
+import pickle
+
+def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True, plot = True):
     if (train == True):
         timesteps = X_train_t[0].shape[0]
         features = X_train_t[1].shape[1]
@@ -51,21 +53,25 @@ def model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = True):
         actual = [y_test_t[i][0] for i in range(len(y_test_t))]
         pred = [y_pred_LSTM_s[i][0] for i in range(len(y_pred_LSTM_s))]
 
+        if(plot == True):
             # Plotting
-        plt.plot(np.round(actual), label='Actual')
-        plt.plot(np.round(pred), label='Predicted')
-        plt.xlabel('Data Point')
-        plt.ylabel('Value')
-        plt.legend()
-        plt.title('Actual vs Predicted Data LSTM')
-        plt.show()
+            plt.bar(np.round(actual), label='Actual')
+            plt.bar(np.round(pred), label='Predicted')
+            plt.xlabel('Data Point')
+            plt.ylabel('Value')
+            plt.legend()
+            plt.title('Actual vs Predicted Data LSTM')
+            plt.show()
+        
+        return np.round(pred)
+    
     except:
         print("No saved model found")
 
 
 
 
-def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True):
+def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True, plot = True):
 
     if (train == True):
         # Define the ANN model architecture
@@ -103,21 +109,24 @@ def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True):
         print("\n")
         print("ann Model -- Test Data")
         model_errors(y_test, np.round(y_pred_ann))
-
-        # Plotting
-        plt.plot(np.round(y_test.reset_index(drop=True)), label='Actual')
-        plt.plot(np.round(y_pred_ann), label='Predicted')
-        plt.xlabel('Data Point')
-        plt.ylabel('Value')
-        plt.legend()
-        plt.title('Actual vs Predicted Data ANN')
-        plt.show()
+        
+        if(plot == True):
+            # Plotting
+            plt.bar(np.round(y_test.reset_index(drop=True)), label='Actual')
+            plt.bar(np.round(y_pred_ann), label='Predicted')
+            plt.xlabel('Data Point')
+            plt.ylabel('Value')
+            plt.legend()
+            plt.title('Actual vs Predicted Data ANN')
+            plt.show()
+        
+        return np.round(y_pred_ann)
 
     except:
         print("No saved Model Found")
 
 
-def model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test):
+def model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test, train = True, plot = True):
     """
     XGBOOST
     """
@@ -125,41 +134,48 @@ def model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test):
     dtrain = xgb.DMatrix(X_train_scaled, label=y_train)
     dtest = xgb.DMatrix(X_test_scaled, label=y_test)
 
-    #^ Set the parameters for XGBoost
-    params = {
-        'max_depth': 7,
-        'eta': 0.4,
-        'objective': 'reg:squarederror'
-    }
+    if(train == True):
+        #^ Set the parameters for XGBoost
+        params = {
+            'max_depth': 7,
+            'eta': 0.4,
+            'objective': 'reg:squarederror'
+        }
 
-    #^ Train the XGBoost model
-    num_rounds = 50000
-    model_xgb = xgb.train(params, dtrain, num_rounds)
+        #^ Train the XGBoost model
+        num_rounds = 50000
+        model_xgb = xgb.train(params, dtrain, num_rounds)
 
+        pickle.dump(model_xgb, open("xgboost_model.pickle", "wb"))
 
-    #^ Predict the target values for the train set
-    y_train_xgb = model_xgb.predict(dtrain)
+    try:
 
-    #^ Predict the target values for the test set
-    y_pred_xgb = model_xgb.predict(dtest)
+        model_xgb = pickle.load(open("xgboost_model.pickle", "rb"))
 
-    print("XGBoost")
-    print("XGBoost -- Train Data")
-    model_errors(y_train, np.round(y_train_xgb))
-    print("\n")
-    print("XGBoost -- Test Data")
-    model_errors(y_test, np.round(y_pred_xgb))
+        #^ Predict the target values for the train set
+        y_train_xgb = model_xgb.predict(dtrain)
 
+        #^ Predict the target values for the test set
+        y_pred_xgb = model_xgb.predict(dtest)
 
-    # Plotting
-    plt.plot(np.round(y_test.reset_index(drop=True)), label='Actual')
-    plt.plot(np.round(y_pred_xgb), label='Predicted')
-    plt.xlabel('Data Point')
-    plt.ylabel('Value')
-    plt.legend()
-    plt.title('Actual vs Predicted Data XGBoost')
-    plt.show()
+        print("XGBoost")
+        print("XGBoost -- Train Data")
+        model_errors(y_train, np.round(y_train_xgb))
+        print("\n")
+        print("XGBoost -- Test Data")
+        model_errors(y_test, np.round(y_pred_xgb))
 
-def plott(y_test):
-    plt.plot(y_test)
-    plt.show()
+        if(plot == True):
+            # Plotting
+            plt.bar(np.round(y_test.reset_index(drop=True)), label='Actual')
+            plt.bar(np.round(y_pred_xgb), label='Predicted')
+            plt.xlabel('Data Point')
+            plt.ylabel('Value')
+            plt.legend()
+            plt.title('Actual vs Predicted Data XGBoost')
+            plt.show()
+
+        return np.round(y_pred_xgb)
+
+    except:
+        print("No save model found")
