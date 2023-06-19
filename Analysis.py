@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 import os
 
 from functions import wait_intervals, window, model_errors
-from models import model_ann, model_lstm, model_xgboost, plott
+from models import model_ann, model_lstm, model_xgboost
 
 import matplotlib.pyplot as plt
 #%% Reproducible
@@ -163,13 +163,82 @@ X_test_t = window(X_test_scaled)
 y_test_t = window(y_test)
 
 #%%
-model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test)
+xgb_pred = pd.DataFrame(model_xgboost(X_train_scaled, y_train, X_test_scaled, y_test, train = False, plot = False)).rename(columns = {0:"XGB"})
 
 
 # %%
-model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = False)
+lstm_pred = pd.DataFrame(model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = False, plot = False)).rename(columns = {0:"LSTM"})
 
 # %%
-model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = False)
+ann_pred = pd.DataFrame(model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = False, plot = False)).rename(columns = {0:"ANN"})
 
+# %%
+#y_test = pd.DataFrame(y_test).remove_index(drop = True)
+
+results = pd.concat([pd.DataFrame(y_test.values).rename(columns = {0:"Test"}), ann_pred, lstm_pred, xgb_pred], axis = 1)
+results = results.reset_index()
+
+# %%
+
+
+# Line plot
+plt.bar(results['index'], results['Test'], label='TEST')
+plt.bar(results['index'], results['ANN'], label='ANN')
+plt.bar(results['index'], results['LSTM'], label='LSTM')
+plt.bar(results['index'], results['XGB'], label='XGB')
+
+plt.xlabel('Interval No.')
+plt.ylabel('Waiting Interval')
+plt.title('Multiple Variables')
+plt.legend()
+
+plt.show()
+
+
+# %%
+
+# Calculate cumulative sums in intervals of 20 rows
+test_sums = results.groupby(results.index // 20)['Test'].sum()
+ann_sums = results.groupby(results.index // 20)['ANN'].sum()
+lstm_sums = results.groupby(results.index // 20)['LSTM'].sum()
+xgb_sums = results.groupby(results.index // 20)['XGB'].sum()
+
+df_20 = pd.concat([test_sums, ann_sums, lstm_sums, xgb_sums], axis =1)
+
+df_20 = df_20.reset_index()
+# %%
+
+plt.bar(df_20['index'], df_20['Test'], label='TEST')
+plt.bar(df_20['index'], df_20['ANN'], label='ANN')
+plt.bar(df_20['index'], df_20['LSTM'], label='LSTM')
+plt.bar(df_20['index'], df_20['XGB'], label='XGB')
+
+plt.xlabel('Interval No.')
+plt.ylabel('Waiting Interval')
+plt.title('Multiple Variables')
+plt.legend()
+
+plt.show()
+
+# %%
+# Plot the grouped bar graph
+ax = df_20[['Test', 'ANN', 'LSTM', 'XGB']].plot(kind='bar')
+ax.set_ylabel('Value')
+#ax.set_xlabel('Category')
+ax.legend(title='Variables')
+
+plt.show()
+
+# %%
+
+non_zero = df_20[df_20["Test"] != 0]
+
+print("ANN")
+model_errors(non_zero['Test'], non_zero['ANN'], mape = True)
+
+print("XGB")
+model_errors(non_zero['Test'], non_zero['XGB'], mape = True)
+
+print("LSTM")
+model_errors(non_zero['Test'], non_zero['LSTM'], mape = True)
 # %%
