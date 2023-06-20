@@ -1,4 +1,4 @@
-print("Swap station check")
+
 #%% lib and functions
 import pandas as pd
 import numpy as np
@@ -15,6 +15,8 @@ from functions import wait_intervals, window, model_errors
 from models import model_ann, model_lstm, model_xgboost
 
 import matplotlib.pyplot as plt
+
+
 #%% Reproducible
 #^ set Seed
 np.random.seed(1234)
