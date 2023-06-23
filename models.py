@@ -77,8 +77,7 @@ def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True, plot
         # Define the ANN model architecture
         model_ann = keras.Sequential([
             layers.Dense(80, activation='sigmoid', input_shape=(X_train_scaled.shape[1],)),
-            layers.Dense(5, activation='sigmoid'),
-            layers.Dense(5, activation='sigmoid'),
+            layers.Dense(10, activation='sigmoid'),
             layers.Dense(1)  # Output layer with 1 neuron for regression
         ])
 
@@ -86,7 +85,7 @@ def model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True, plot
         model_ann.compile(optimizer='adam', loss='mean_squared_error')
 
         # Train the model
-        model_ann.fit(X_train_scaled, y_train, epochs=1500, batch_size=300, verbose=1)
+        model_ann.fit(X_train_scaled, y_train, epochs=2000, batch_size=300, verbose=1)
 
         model_ann.save("ann_model.h5")
 

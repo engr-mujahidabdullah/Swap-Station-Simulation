@@ -26,7 +26,7 @@ random.set_seed(1234)
 #^ run script on single core to get reproduceable results
 os.environ['TF_NUM_THREADS'] = '1'
 
-path = 'sim_30.xlsx'
+path = 'sim_030.xlsx'
 
 #%%
 #* Read the Excel file
@@ -51,6 +51,19 @@ df = pd.concat([df, event_d], axis=1)
 
 #*Replace NaN with 0
 df = df.fillna(0)
+
+#%%
+
+vehicles_sums = df.groupby(df.index // (20*24))['Vehicles'].sum()
+
+soc_sums = df.groupby(df.index // (20*24))['total_Delta_SoC'].sum()
+
+plt.plot(vehicles_sums)
+plt.show()
+plt.plot(soc_sums)
+plt.show()
+
+#%%
 
 """
 Select predictors and Response from dataset
@@ -172,7 +185,7 @@ xgb_pred = pd.DataFrame(model_xgboost(X_train_scaled, y_train, X_test_scaled, y_
 lstm_pred = pd.DataFrame(model_lstm(X_train_t, y_train_t, X_test_t, y_test_t, train = False, plot = False)).rename(columns = {0:"LSTM"})
 
 # %%
-ann_pred = pd.DataFrame(model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = False, plot = False)).rename(columns = {0:"ANN"})
+ann_pred = pd.DataFrame(model_ann(X_train_scaled, y_train, X_test_scaled, y_test, train = True, plot = False)).rename(columns = {0:"ANN"})
 
 # %%
 #y_test = pd.DataFrame(y_test).remove_index(drop = True)
@@ -181,9 +194,7 @@ results = pd.concat([pd.DataFrame(y_test.values).rename(columns = {0:"Test"}), a
 results = results.reset_index()
 
 # %%
-
-
-# Line plot
+"""
 plt.bar(results['index'], results['Test'], label='TEST')
 plt.bar(results['index'], results['ANN'], label='ANN')
 plt.bar(results['index'], results['LSTM'], label='LSTM')
@@ -195,7 +206,7 @@ plt.title('Multiple Variables')
 plt.legend()
 
 plt.show()
-
+"""
 
 # %%
 
@@ -208,6 +219,7 @@ xgb_sums = results.groupby(results.index // 20)['XGB'].sum()
 df_20 = pd.concat([test_sums, ann_sums, lstm_sums, xgb_sums], axis =1)
 
 df_20 = df_20.reset_index()
+
 # %%
 
 plt.bar(df_20['index'], df_20['Test'], label='TEST')
@@ -224,7 +236,7 @@ plt.show()
 
 # %%
 # Plot the grouped bar graph
-ax = df_20[['Test', 'ANN', 'LSTM', 'XGB']].plot(kind='bar')
+ax = df_20[['Test', 'ANN', 'LSTM', 'XGB']][10:30].plot(kind='bar')
 ax.set_ylabel('Value')
 #ax.set_xlabel('Category')
 ax.legend(title='Variables')
@@ -235,12 +247,12 @@ plt.show()
 
 non_zero = df_20[df_20["Test"] != 0]
 
-print("ANN")
+print("\nANN")
 model_errors(non_zero['Test'], non_zero['ANN'], mape = True)
 
-print("XGB")
+print("\nXGB")
 model_errors(non_zero['Test'], non_zero['XGB'], mape = True)
 
-print("LSTM")
+print("\nLSTM")
 model_errors(non_zero['Test'], non_zero['LSTM'], mape = True)
 # %%
